@@ -1,0 +1,16 @@
+services:
+  cyber-x-osint:
+    build: .
+    container_name: cyber-x-osint
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./storage:/app/storage
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

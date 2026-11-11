@@ -1,0 +1,4 @@
+email,username,domain,breach_name,breach_date,source_reference
+alice@example.test,alice,example.test,Synthetic University Exercise,2026-01-15,https://example.test/disclosures/synthetic-incident
+bob@example.test,bob,example.test,Synthetic University Exercise,2026-01-15,https://example.test/disclosures/synthetic-incident
+student@demo.test,student,demo.test,Classroom Tabletop Dataset,2026-03-20,https://demo.test/security-notice

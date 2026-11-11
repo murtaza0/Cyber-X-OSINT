@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#090d16" />
+  <title>Cyber X OSINT</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">C<span>•</span></div>
+        <div><div class="brand-name">CYBER X</div><div class="brand-sub">INTELLIGENCE WORKSPACE</div><div class="brand-sub">PUBLIC-WEB COLLECTION</div></div>
+      </div>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="dashboard"><span class="nav-icon">◈</span>Command Center</button>
+        <button class="nav-item" data-page="investigations"><span class="nav-icon">▤</span>Investigations</button>
+        <button class="nav-item" data-page="framework"><span class="nav-icon">⌘</span>OSINT Framework</button>
+        <button class="nav-item" data-page="sources"><span class="nav-icon">◎</span>Source Manager</button>
+        <button class="nav-item" data-page="audit"><span class="nav-icon">≋</span>Audit Trail</button>
+      </nav>
+      <div class="side-label side-label-spaced">INTELLIGENCE</div>
+      <nav class="nav-list">
+        <button class="nav-item" data-page="module" data-module="username">Username Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="email">Email Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="phone">Phone Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="credential">Credential Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="domain">Domain Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="ip">IP Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="social">Social Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="website">Website Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="image">Image Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="document">Document Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="github">GitHub Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="network">Network Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="threat">Threat Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="breach">Breach Intelligence</button>
+        <button class="nav-item" data-page="exposure"><span class="nav-icon">◉</span>Exposure Dataset Lab</button>
+        <button class="nav-item" data-page="module" data-module="search">Search Engine Intelligence</button>
+        <button class="nav-item" data-page="module" data-module="attack_surface">Attack Surface</button>
+        <button class="nav-item" data-page="module" data-module="digital_footprint">Digital Footprint</button>
+        <button class="nav-item" data-page="module" data-module="correlation">Entity Correlation</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-status"><span class="status-dot"></span><span id="apiStatus">BACKEND CONNECTING</span></div>
+        <button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span>Settings</button>
+        <div class="version">BUILD 1.5.0 · VERCEL READY</div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="crumbs"><span>Cyber X OSINT</span><b>/</b><strong id="pageCrumb">Command Center</strong></div>
+        <div class="top-actions">
+          <div class="authorized-chip"><span></span> AUTHORIZED USE ONLY</div>
+          <button class="icon-button" id="refreshBtn" title="Refresh">↻</button>
+          <button class="primary-button" id="newCaseBtn">＋ New Investigation</button>
+        </div>
+      </header>
+      <div class="global-notice"><span class="notice-mark">!</span><div><strong>ANALYST USE · PUBLIC SOURCES</strong><span>Collect only publicly accessible pages or owner-authorized records. No login bypass, stolen credentials, private dumps, CAPTCHA evasion or access-control circumvention.</span></div></div>
+      <section id="pageContent" class="page-content"><div class="loading-state">Initializing intelligence workspace…</div></section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" id="modalContent"></div>
+  </div>
+  <div class="toast-stack" id="toastStack"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
