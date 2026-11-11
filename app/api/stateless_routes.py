@@ -6,6 +6,9 @@ database, local file, investigation history, or evidence store.
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
+import ipaddress
 import logging
 from datetime import datetime, timezone
 from typing import Any
@@ -62,7 +65,6 @@ async def require_auth(
             detail="Remote workspace is locked. Set API_TOKEN in the deployment environment.",
         )
     # Local development is allowed only from loopback.
-    import ipaddress
     host = request.client.host if request.client else ""
     try:
         is_loopback = ipaddress.ip_address(host).is_loopback
