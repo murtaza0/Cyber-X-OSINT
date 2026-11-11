@@ -1,79 +1,57 @@
-# CYBER X — OSINT & Data Exposure Intelligence Platform
+# Cyber X — Stateless OSINT Workspace
 
-**Version:** 1.5.0  
-**Project type:** Final Year Project (FYP) · Cybersecurity / Digital Forensics / OSINT  
-**Stack:** Python 3.12 · FastAPI · SQLAlchemy · HTML · CSS · Vanilla JavaScript · SQLite/PostgreSQL
+**Version:** 2.0.0  
+**Project type:** Final Year Project · Cybersecurity / Digital Forensics / OSINT  
+**Stack:** Python 3.12 · FastAPI · HTML · CSS · Vanilla JavaScript
 
-Cyber X is a self-hosted intelligence workspace for investigations, public-web collection, passive attack-surface review, redacted exposure-index correlation, evidence integrity, entity correlation, audit trails and report generation.
+Cyber X is a stateless OSINT workspace. It fetches permitted public-source information for one target, normalizes and correlates observations in request memory, and returns results to the browser. It does not create user accounts, investigations, scan history, evidence records, datasets or a database.
 
-> **Scope notice:** Use only public pages that permit automated access, synthetic datasets, records you own, or information you are explicitly authorized to assess. The collectors do not bypass logins, CAPTCHAs, paywalls, robots restrictions or access controls. The Exposure Dataset Lab accepts redacted identifier indexes only; raw stolen credential dumps, passwords, tokens, cookies and credential pairs are rejected.
+> **Authorized-use scope:** Query only publicly accessible sources and targets you are authorized to research. The collectors do not bypass logins, CAPTCHAs, paywalls, robots restrictions or access controls. The application does not access stolen credential dumps, private databases or password collections.
 
-## 1. Features
+## 1. What it does
 
-### Investigation workspace
-- Investigation/case creation, target identification and bulk target import.
-- Automatic target classification: email, username, domain, URL, IP, CIDR, phone and file hash.
-- Collection jobs with module status, visible failures and per-finding confidence.
-- Evidence vault with SHA-256 integrity digests, timeline, entity graph and source provenance.
-- Export to JSON, HTML and PDF.
+- Detects email, username, phone, domain, URL, IP, CIDR, file-hash and name targets.
+- Selects recommended public-source modules or lets the analyst choose up to eight modules.
+- Collects public HTML references from supported sites and performs passive DNS lookups.
+- Displays module status, findings, source links, confidence and collection timestamps.
+- Exports the current result in JSON or HTML directly in the browser.
+- Uses bounded concurrency, per-module timeouts, response-size limits and public-host validation in the existing collectors.
+- Protects remote deployments with an operator-configured access token.
 
-### Public-source intelligence
-- Public HTML search-result scraping from DuckDuckGo HTML.
-- Certificate Transparency page parsing from crt.sh HTML.
-- GitHub public profile and repository-page parsing from ordinary HTML.
-- URLhaus public browse-page parsing.
-- Hurricane Electric public routing-page parsing.
-- Website title, metadata, headers, technology hints and public links.
-- DNS record collection through DNS protocol lookups.
-- Username, email, social and breach-disclosure search references.
-- Request timeouts, response-size limits, URL safety validation and access-denial handling.
+### Collection modules
 
-No third-party intelligence API keys are required by the collection workflow. The `/api/v1/` routes are the application's own backend interface, not external provider APIs.
+Username, email, phone, domain, IP, social, website, GitHub, network, threat references, public incident references, search, passive attack-surface context, digital-footprint context and result correlation.
 
-### Exposure Dataset Lab
-- Import redacted CSV indexes supplied by the analyst or created from synthetic classroom data.
-- Accepts `email`, `username`, `domain`, `breach_name`, `breach_date`, and `source_reference`.
-- Rejects columns suggesting passwords, password hashes, credentials, secrets, tokens, cookies, sessions or raw dumps.
-- Normalizes identifiers and stores keyed HMAC-SHA256 digests.
-- Matches investigation targets against imported indexes.
-- Records audit events for imports, deletions and checks.
-- Includes synthetic sample data at `sample_data/synthetic_exposure_index.csv`.
+Some modules return search references or contextual observations rather than authoritative verification. A public incident reference does not prove that an account or password was compromised. A missing result does not prove that information does not exist.
 
-A match means the identifier exists in an analyst-imported index. It is not proof that a password was leaked or that an account is currently compromised.
-
-### Additional capabilities
-- Optional encrypted storage of analyst-entered credentials for authorized lab assessments.
-- Offline weak-password heuristics.
-- Optional owner-configured PostgreSQL connector with read-only parameterized queries.
-- Evidence metadata, file fingerprinting and supported local document/image metadata extraction.
-- Entity extraction, correlation relationships, investigation timeline and audit log.
-- Protected workspace access token and security headers.
-- Docker configuration and Windows/Linux run scripts.
-
-## 2. Architecture
+## 2. Stateless architecture
 
 ```text
-Browser UI (static HTML/CSS/JS)
-          |
-          v
-FastAPI application (app/main.py)
-          |
-          +-- Investigation & target services
-          +-- Public HTML collectors / DNS lookups
-          +-- Exposure Dataset Lab
-          +-- Evidence, correlation and reporting
-          |
-          v
-SQLAlchemy data layer
-     +-- SQLite (local development)
-     +-- PostgreSQL (persistent hosted deployment)
+Browser (HTML / CSS / JavaScript)
+             |
+             v
+       FastAPI /scan
+             |
+             v
+  Target validation and module selection
+             |
+             v
+ Public HTML collectors + passive DNS
+             |
+             v
+ In-memory normalization and correlation
+             |
+             v
+ Browser response + local JSON/HTML export
 ```
+
+**No database is required.** The scan response is created in memory and returned to the browser. The server does not persist target inputs or findings. JSON/HTML reports are generated locally by the browser; they are not uploaded to the server.
+
+Vercel's temporary function filesystem is not used for scan storage. The app does not initialize SQLAlchemy, create tables, seed a source database or require PostgreSQL.
 
 ## 3. Local setup — Windows 11
 
-Requires Python 3.12.
-
-Open PowerShell in the project root:
+Requires Python 3.11+ (Python 3.12 recommended).
 
 ```powershell
 Copy-Item .env.example .env
@@ -81,88 +59,93 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-Generate secrets:
-
-```powershell
-python -c "import secrets; print('API_TOKEN=' + secrets.token_urlsafe(48)); print('EXPOSURE_HMAC_KEY=' + secrets.token_urlsafe(48))"
-python -c "from cryptography.fernet import Fernet; print('CREDENTIAL_ENCRYPTION_KEY=' + Fernet.generate_key().decode())"
-```
-
-Put the generated values in `.env`.
-
-Start the application:
-
-```powershell
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000`.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Local loopback development can run without an API token. If you set `APP_ENV=production`, configure `API_TOKEN`.
 
-API documentation is available at `/docs`.
+API schema: `/docs`  
+Health check: `/health`
 
-## 4. GitHub
+## 4. Vercel deployment
 
-Do not upload `.env`, `.venv`, storage directories, database files, real incident datasets or secrets.
-
-The `.gitignore` excludes local environment files, virtual environments, storage, generated artifacts and secrets.
-
-## 5. Vercel deployment
-
-1. Import the GitHub repository into Vercel.
+1. Import `murtaza0/Cyber-X-OSINT` into Vercel.
 2. Set the project root to the repository root.
-3. Configure the required environment variables.
-4. Configure a persistent PostgreSQL database.
-5. Deploy and verify `/health`.
+3. Add the environment variable `API_TOKEN` with a long random value.
+4. Set `APP_ENV=production`.
+5. Deploy and wait for the deployment to become **Ready**.
+6. Confirm the assigned `*.vercel.app` domain is listed under Project → Settings → Domains.
+7. Open the deployment and enter the same `API_TOKEN` in the access prompt.
 
-### Required environment variables
+Generate a token locally with:
 
-| Variable | Purpose |
-|---|---|
-| `APP_ENV` | Set to `production` |
-| `API_TOKEN` | Strong application access token |
-| `DATABASE_URL` | Persistent PostgreSQL connection URI |
-| `EXPOSURE_HMAC_KEY` | Stable secret for keyed identifier matching |
-| `CREDENTIAL_ENCRYPTION_KEY` | Fernet encryption key |
-| `USER_AGENT` | Collector identification string |
-| `MAX_UPLOAD_MB` | Upload limit; optional |
-| `REQUEST_TIMEOUT_SECONDS` | Request timeout; optional |
-
-**Important:** Vercel function storage is not durable. Use persistent PostgreSQL for hosted investigations, findings, audit records and exposure indexes. Uploaded binary evidence is temporary unless persistent object storage is added.
-
-See the [FastAPI on Vercel guide](https://vercel.com/docs/frameworks/backend/fastapi) and [Python runtime documentation](https://vercel.com/docs/functions/runtimes/python).
-
-## 6. Redacted CSV schema
-
-```csv
-email,username,domain,breach_name,breach_date,source_reference
-alice@example.test,alice,example.test,Synthetic University Exercise,2026-01-15,https://example.test/report
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-At least one of `email`, `username` or `domain` must be populated. Never include passwords, password hashes, API keys, cookies, tokens, session material or raw credential dumps.
+No `DATABASE_URL`, PostgreSQL instance, credential encryption key or exposure HMAC key is required.
+
+### Environment variables
+
+| Variable | Required | Purpose |
+|---|---:|---|
+| `API_TOKEN` | Remote deployment | Protects scan and module endpoints |
+| `APP_ENV` | Recommended | Use `production` on Vercel; `development` locally |
+| `REQUEST_TIMEOUT_SECONDS` | No | Per-module timeout baseline (bounded by the API) |
+| `USER_AGENT` | No | Identifies the public-web collector |
+| `LOG_LEVEL` | No | Application log verbosity |
+
+## 5. API
+
+### `POST /api/v1/scan`
+
+Request:
+
+```json
+{
+  "target": "example.com",
+  "modules": ["domain", "website", "search"]
+}
+```
+
+Omit `modules` to use the recommended modules for the detected target type. A maximum of eight supported modules can be selected.
+
+The response contains the normalized target, collection timestamp, per-module status, findings, source URLs, confidence values, limitations and a `storage: "memory_only"` marker.
+
+### `GET /api/v1/modules`
+
+Returns the supported module catalog.
+
+Both endpoints require `X-API-Token` when `API_TOKEN` is configured.
+
+## 6. Security and operational limits
+
+- No password, token, cookie or private credential collection.
+- No private-database connector, credential reveal, or breach-dump search.
+- No login-gated scraping, CAPTCHA evasion or access-control bypass.
+- No port scanning or host discovery for CIDR ranges.
+- Website collectors reject non-public destinations and disallow non-standard ports.
+- Public-source failures and rate limits are surfaced as module status, not hidden.
+- Collection is bounded to one target and at most eight modules per request.
+
+For a public production deployment, protect the token, monitor usage and consider an edge/WAF rate limit. The token is an access gate, not multi-user identity management or role-based access control.
 
 ## 7. Testing
 
-Run:
+Run the available tests:
 
 ```powershell
 python -m pytest -q
 ```
 
-See `docs/TESTING.md` for the test plan.
+Before release, verify locally:
+- `GET /health` returns `status=ok`.
+- `GET /api/v1/modules` returns the module catalog.
+- `POST /api/v1/scan` returns `storage=memory_only`.
+- No database URL is required and no database file is created.
+- JSON and HTML exports are generated by the browser.
 
-## 8. Known limitations
-
-- Public HTML structures and search-engine response policies can change.
-- Search results are investigative leads, not authoritative confirmation.
-- No login-gated scraping, private-database intrusion, credential-dump harvesting or access-control evasion is provided.
-- Dataset matching is limited to analyst-imported redacted indexes.
-- Large-scale collection requires a durable queue/worker architecture.
-- Vercel binary evidence uploads require persistent object storage for durability.
-- The project provides access-token protection, not a full multi-user identity/RBAC platform.
-
-## 9. Project documentation
+## 8. Project documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [FYP project report](docs/FYP-PROJECT-REPORT.md)
@@ -174,4 +157,4 @@ See `docs/TESTING.md` for the test plan.
 
 ---
 
-**Cyber-X-OSINT v1.5.0** — Final Year Project in Cybersecurity, Digital Forensics and OSINT.
+**Cyber-X-OSINT v2.0.0** — Stateless public-source intelligence for cybersecurity research.
