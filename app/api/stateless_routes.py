@@ -15,7 +15,6 @@ from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.core.targets import detect_target, modules_for_target
-from app.core.security import verify_api_token
 from app.collectors.collectors import collect_module
 
 log = logging.getLogger(__name__)
@@ -52,7 +51,9 @@ async def require_auth(
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:]
     if settings.api_token:
-        if not verify_api_token(token):
+        expected = settings.api_token
+        valid = bool(expected and token and hmac.compare_digest(hashlib.sha256(token.encode()).digest(), hashlib.sha256(expected.encode()).digest()))
+        if not valid:
             raise HTTPException(status_code=401, detail="Missing or invalid workspace access token")
         return
     if request.headers.get("x-vercel-id") or settings.app_env.lower() == "production":
