@@ -267,9 +267,9 @@ async def collect_module(module: str, target: str, target_type: str) -> list[dic
         results = await search_public_html(f'"{target}" (site:linkedin.com OR site:instagram.com OR site:x.com OR site:facebook.com)', limit=8)
         return [finding(module, "public_social_search_results", json.dumps(results, ensure_ascii=False), details={"count": len(results), "collection_mode": "public_html", "note": "Only public indexed result pages; private posts and login-gated content are not accessed."}, source_url="https://html.duckduckgo.com/html/" if results else None, confidence=0.65 if results else 0.35)]
     if module == "digital_footprint":
-        return [finding(module, "footprint_seed", target, details={"target_type": target_type, "note": "Related entities will be added as collectors return evidence"}, confidence=0.6)]
+        return [finding(module, "footprint_seed", target, details={"target_type": target_type, "note": "Seed identifier for this live scan; no cross-scan history is retained"}, confidence=0.6)]
     if module == "correlation":
-        return [finding(module, "correlation_status", "Correlation runs automatically after findings are stored", confidence=0.8)]
+        return [finding(module, "correlation_status", "Correlation is limited to observations returned in this scan response; no history is retained", confidence=0.8)]
     if module in {"credential", "image", "document"}:
         return [finding(module, "manual_input_required", f"{module} module uses authorized manual records or file uploads", confidence=0.7)]
     return [finding(module, "module_status", "Module registered; no source adapter configured yet", confidence=0.3)]
